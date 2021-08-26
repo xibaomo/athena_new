@@ -1,0 +1,30 @@
+#$-N athena_job
+#$-pe make 1
+#$-cwd -V
+#$-j y
+#$-q common
+#$-S /bin/sh
+
+date 
+echo "SGE ID: $JOB_ID"
+echo "Master location: $(hostname)"
+echo "Allocated resource:"
+cat $PE_HOSTFILE
+
+RUN_ATHENA=run_athena.py
+
+for i in {1..5}
+do 
+    tick=$(date +%s)
+    $RUN_ATHENA local.yaml $> log_$i
+    rms = $(grep rms log_$i | awk '{print $8}')
+    if [[ $rms=="nan" ]]
+    then
+        echo "rms is nan"
+        break
+    fi
+    toc=$(date +%s)
+done
+date
+
+echo "Elapsed time = "$((toc-tic))'s'

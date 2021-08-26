@@ -1,0 +1,224 @@
+Project: athena
+Version: "0.0.1"
+
+GENERAL:
+    # Applications:
+    #               99 - Spam mail filter
+    #               0  - Forex tick sampler
+    #               1  - Forex trainer
+    #               2  - Generic app
+    #               3  - Genetic optimization
+    #               4  - Forex bar trainer
+    APPLICATION: 0
+
+    # Log levels: 0 - LOG_FATAL
+    #             1 - LOG_ERROR
+    #             2 - LOG_INFO
+    #             3 - LOG_DEBUG
+    LOG_LEVEL: 2
+
+    OUTPUT_DIR: output
+
+    # Format of gauge file
+    GAUGE_FILE_FORMAT: csv
+
+    # Model selector, crossval idation is default
+    ENABLE_MODEL_SELECTOR: true
+
+    # Maximum allowed number of to-be-trained models
+    MAX_NUM_MODELS: 3
+
+    # Minimum number of product models
+    MIN_NUM_MODELS: 2
+
+    SAVE_MODEL_FILE: ""
+    LOAD_MODEL_FILE: ""
+
+    # skip training if true
+    ENABLE_VERFICATION: false
+
+    # feature extractor related
+    ENABLE_FEATURE_STANDARDIZATION: false
+    SAVE_SCALER_FILE: ""
+    LOAD_SCALER_FILE: ""
+
+    ENABLE_PCA: false
+    PCA_COMPONENTS: 8
+    SAVE_PCA_FILE: ""
+    LOAD_PCA_FILE: ""
+
+# Machine-learning engine
+
+ML_ENGINE_CORE:
+    # Machine-learning engine type:
+    # 0 - support vector machine (SVM)
+    # 1 - decision tree (DCT)
+    # 2 - random forest
+    # 3 - DNN classifier
+    # 4 - DNN regressor
+    ENGINE_CORE_TYPE: 3
+    SVM:
+        # rbf, linear, poly, sigmoid, precomputed
+        KERNEL: rbf
+        C: 100.
+        GAMMA: auto
+        # used by poly & sigmoid
+        COEF0: 0.
+        # only used by poly
+        DEGREE: 3
+    DCT:
+        MIN_SAMPLE_SPLIT: 10
+        # gini or entropy
+        CRITERION: entropy
+    RMF: # Random Forest
+        MAX_DEPTH: ""
+        MIN_SAMPLES_SPLIT: 5
+        N_ESTIMATORS: 10
+        CRITERION: entropy
+        MIN_SAMPLES_LEAF: 30
+        CLASS_WEIGHT: '{0:1,1:1}'  # or "balanced", or "balanced_subsample"
+        N_JOBS: 1
+    DNN:
+        CLASS_WEIGHT: '{0:1,1:10}'
+        EPOCHS: 1000
+        BATCH_SIZE: 500
+        NEURONS: [10,20,10]
+        ACTIVATION: ['relu','relu','relu']
+        OUTPUT_ACT: sigmoid
+        DROPOUT_RATE: [0.0,0.0,0.0]
+        REGULARIZER: ['L2:0.00','L2:0.00','L2:0.00']
+        ALGORITHM: Adam
+        MOMENTUM: 0.1 #ONLY USED WHEN ALGORITHM == SGD
+        WEIGHT_INIT: uniform
+        LEARN_RATE: -1
+        LOSS_FUNC: binary_crossentropy # mean_squared_error
+        ENABLE_SHUFFLE: false
+        VERBOSE: 2
+        CHECKPOINT_PERIOD: 0
+        CHECKPOINT_FOLDER: ckpts/
+        N_JOBS: 16
+
+FEATURE_EXTRACTOR:
+    # Type of feature extractor:
+    # 99 - word count
+    EXTRACTOR_TVPE: 0
+
+MODEL_SELECTOR:
+    # number of groups in which the train data is divided for cross-validation
+    CV_FOLD: 5
+    # number of threads running in parallel
+    N_JOBS: 8
+
+    SAVE_MODEL_PREFIX: ""
+    LOAD_MODEL_PREFIX: ""
+
+########################### Classifiers ###########################
+    MODEL_1:
+        ENABLED: false
+        MODEL_NAME: SVM
+        KERNEL_LIST: [rbf,sigmoid]
+    MODEL_2:
+        ENABLED: false
+        MODEL_NAME: DCT # Decision tree
+        SAMPLE_SPLIT: 4,200,100 # min,max,num
+    MODEL_3:
+        ENABLED: false
+        MODEL_NAME: RMF # Random forest
+        N_ESTIMATORS: 3,100,10 # min,max,num
+        CRITERION: [gini,entropy]
+        MIN_SAMPLES_SPLIT: 2,40,10
+
+    MODEL_4: #  not enabled
+        ENABLED: false
+        MODEL_NAME: DNN
+        
+        RANDOM_SEED: -1 # -1 means no seed
+        NEURONS: [10,20,10]
+        ACTIVATION: ['softmax','softplus','softsign','relu','tanh','sigmoid','hard_sigmoid','linear']
+        EPOCHS: 100,1000,10 # START,STOP,NUM
+        BATCH_SIZE: 10,200,10
+        DROPOUT_RATE: 0.0,0.9,10
+        ALGORITHM: ['SGD','RMSprop','Adagrad','Adadelta','Adam','Adamax','Nadam']
+        WEIGHT_INIT: ['uniform','lecun_uniform','normal','zero','glorot_normal','glorot_uniform','he_normal','he_uniform']
+        LEARN_RATE: 0.001,0.3,10
+        MOMENTUM: 0.,0.9,10 #ONLY USED WHEN ALGORITHM == SGD
+        
+########################### App config starts here ###########################
+FTS: # Forex Tick Sampler
+    TICK_FILE: A.CSV
+    SAMPLE_RATE: 30 # sec
+    EXPIRY_PERIOD: 1 # days
+    TAKE_PROFIT_POINTS: 100 
+    STOP_LOSS_POINTS: 100
+    FOREX_SYMBOL: EURUSD
+
+BAR_MARKER:
+    BAR_FILE: A.CSV
+    OFFSET: 100
+    FOREX_SYMBOL: EURUSD
+FOREX_BAR_FILTER:
+    BAR_FILE: EURUSD_labeled.csv
+    FOREX_SYMBOL: EURUSD
+    LOOK_BACK: 200
+    MA_LOOK_BACK: 120
+    REG_FEATURES: ['WILLR','RSI']
+    LABEL_FEATURES: ['BINOM']
+    TEST_SIZE: 7000
+    PROFIT_LOSS: 10.0
+    POS_TYPE: buy # sell
+
+FXT: # Forex trainer
+    TRAINER_TYPE: 0  # 0 - multifilter (non-DNN) 
+                     # 1 - DNN
+                     # 2 - RANDOM FOREST
+    POINT_VALUE: 0.1 # in US dollar    
+    TAKE_PROFIT_POINTS: 100
+    STOP_LOSS_POINTS: 100
+    FEATURE_EXTRACTOR:
+        TICK_FILE: A.CSV
+        TEST_SIZE: 500
+        SAMPLE_RATE: 30 # sec
+
+        FEATURE_LIST: ['DMA','RSI','ROC','EMA','KAMA','LAG']
+        FAST_PERIOD: 200
+        SLOW_PERIOD: 80
+
+GENETIC_OPT:
+    OBJECTIVE_TYPE: 1 # 0 - minimization, 1 - maximization
+    NUM_PARAMS: 3
+    UPPER_BOUNDS: []
+    LOWER_BOUNDS: []
+    SUM_BOUND: 99999
+    POPULATION_SIZE: 100
+    NUM_GENERATIONS: 100
+    YAML_MODIFIER: ABC.PY # define writeToYaml(individual,yaml_template)
+    YAML_TEMPLATE: A.YAML
+    SGE_JOB_FILE: job
+    CROSSOVER_PROB: 0.5
+    MUTATE_PROB: 0.2
+    INDEPENDENT_PROB: 0.05
+    TOURNAMENT_SIZE: 3
+    RESULT_KEYWORDS: ''
+    NITERS_PER_KID: 5
+    DATA_FILES: ['A','B']
+
+GENERIC_APP:
+    ENGINE_TYPE: 0  # 0 - Classifier. 1 - Regressor (not supported)
+    TRAIN_DATA_FILES: ['TRAIN.CSV']
+    TEST_RATIO: 0.2
+    TEST_WHOLE_SET: false
+    SHUFFLE_RANDOM_SEED: 42
+    ENABLE_SPLIT_SHUFFLE: false # whether to shuffle when splitting data set
+    VERIFY_DATA_FILES: ['VERIFY.CSV']
+    TARGET_HEADER: ""
+    FEATURE_HEADERS: ""
+    EVALUATE_MODEL: false
+
+SPM:
+    # Type of input data
+    # 0 - raw data
+    INPUT_TYPE: 0
+
+    # Used if INPUT_TYPE == 0
+    TRAIN_DATA_DIR: ./
+    TEST_DATA_DIR: ./

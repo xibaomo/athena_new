@@ -1,0 +1,66 @@
+GENERAL: 
+    # Application type: 0 - min bar tracker
+    #                   1 - min bar classifier - rf model
+    #                   2 - min bar pair trader
+    #                   3 - pair selector
+    #                   4 - robust pair trader
+    APPLICATION: 4
+
+    # Log level: 0 - LOG_FATAL
+    #            1 - LOG_ERROR
+    #            2 - LOG_WARNING
+    #            3 - LOG_INFO
+    #            4 - LOG_VERBOSE
+    #            5 - LOG_DEBUG
+    LOG_LEVEL: 3
+    PORT: 8888
+
+########################################################
+#################### App configs #######################
+########################################################
+# ------------- ROBUST_PAIR_TRADER -----------------
+ROBUST_PAIR_TRADER:
+    SYM_X: USDDKK
+    SYM_Y: EURUSD
+    THRESHOLD_STD: [0.2,1.5]  # in unit of std
+    OUTLIER_WEIGHT_RATIO: 0.2  # w_now/w_ave
+    OUTLIER_NUM_LIMIT: 10  # beyond which the model fails
+
+    STATIONARY_PV_LIMIT: 0.05 
+    R2_LIMIT: 0.55 # Stop opening positions if R2 is lower 
+# ------------- MINBAR_PAIR_TRADER -----------------
+MINBAR_PAIR_TRADER:
+    PAIR_SYM_X: EURZAR
+    PAIR_SYM_Y: USDSGD
+    #
+    # ==== lose 711-720-2019
+    #PAIR_SYM_X: USDDKK
+    #PAIR_SYM_Y: USDCHF
+
+    STATIONARY_CHECK_LOOKBACK: 5000
+    STATIONARY_PV_LIMIT: 0.025
+
+    THRESHOLD_STD: 1.7  # in unit of std
+    CORR_BSL: 0.8
+    R2_BSL: 0.8
+
+# ------------- MINBAR_TRACKER -------------------
+MINBAR_TRACKER:
+    HISTORY_BAR_FILE: EURUSD_labeled.csv
+    PREDICTOR_TYPE: 0 #  0 - MA predictor
+
+MA_PREDICTOR:
+    MA_PREDICTOR_TYPE: 1 # 0 - MA Grad Hunter
+                         # 1 - MA crosser
+    MA_TYPE: LWMA
+
+    MA_GRAD_HUNTER: 
+        LOOKBACK: 90
+        STARTOFF_SLOPE: 1.0e-6
+        TURN_POINT_OFFSET: 10
+    MA_CROSSER:
+        LONG_LOOKBACK: 120
+        SHORT_LOOKBACK: 10
+        TURN_POINT_EXPIRY: 10
+        STARTOFF_GAP: 5.e-5
+
